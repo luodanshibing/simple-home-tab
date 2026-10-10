@@ -111,7 +111,7 @@ All the logic that can be tested without Obsidian lives in the pure functions at
 
 ### License
 
-No license file yet.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
@@ -228,4 +228,4 @@ powershell -File tools\deploy.ps1 -Vault "E:\Enotes" -Enable    # 装进指定�
 
 ### 许可证
 
-暂无 LICENSE 文件。
+MIT，见 [LICENSE](LICENSE)。
