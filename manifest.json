@@ -1,9 +1,9 @@
 {
   "id": "simple-home-tab",
   "name": "Simple Home Tab",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "minAppVersion": "1.5.0",
-  "description": "极简新标签页：文件名搜索、自定义页面名称与头像、题图（宽度/高度/圆角可调）、近期文档、当前日期时间。每个模块都能单独显示/隐藏。纯轻量实现，启动零扫描，不拖慢 Obsidian。",
+  "description": "极简新标签页：文件名搜索、自定义页面名称与头像、题图（宽度/高度/圆角可调）、近期文档、当前日期时间、快速操作（新建笔记/数据库/白板、打开文件、网页浏览器）。每个模块都能单独显示/隐藏。纯轻量实现，启动零扫描，不拖慢 Obsidian。",
   "author": "luodanshibing",
   "authorUrl": "",
   "isDesktopOnly": false

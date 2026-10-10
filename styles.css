@@ -261,3 +261,46 @@
 .simple-home-banner.is-full.is-flush {
   margin-top: -6vh;
 }
+
+/* ---------- 快速操作（复刻空标签页那排入口） ---------- */
+.simple-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 18px;
+}
+.simple-home-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  line-height: 1;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.simple-home-action:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+.simple-home-action-icon {
+  display: inline-flex;
+  align-items: center;
+}
+.simple-home-action-icon .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+.simple-home-action-label {
+  white-space: nowrap;
+}

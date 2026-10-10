@@ -20,7 +20,7 @@
  *   §6 导出
  * ========================================================================== */
 
-const { Plugin, ItemView, PluginSettingTab, Setting, TFile } = require('obsidian');
+const { Plugin, ItemView, PluginSettingTab, Setting, TFile, Notice, setIcon } = require('obsidian');
 
 /* §1 常量与默认设置 ======================================================== */
 
@@ -39,6 +39,7 @@ const DEFAULT_SETTINGS = {
   showClock: true,
   showSearch: true,
   showRecent: true,
+  showActions: true,
 
   /* 页面头部 */
   title: '我的工作台',
@@ -181,11 +182,96 @@ function bannerClasses(settings) {
 
 /* §3 插件主体 ============================================================= */
 
+/* §2.5 快速操作：复用 Obsidian 自己的命令 ================================= */
+
+/**
+ * 空标签页原本有五个入口（新建笔记 / 新建数据库 / 新建白板 / 打开文件 / 网页浏览器）。
+ * 本插件把空标签页换成了首页，所以在这里把它们复刻成一排按钮 ——
+ * 但按钮执行的仍然是 Obsidian 自己的命令（运行时按 id / 名称解析），
+ * 因此行为与原生完全一致，也不会因为换了版本就改变语义。
+ */
+const CORE_PREFIXES = ['file:', 'file-explorer:', 'switcher:', 'canvas:', 'bases:', 'webviewer:', 'app:', 'workspace:', 'global-search:'];
+
+const ACTION_SPECS = [
+  {
+    id: 'new-note',
+    label: '新建笔记',
+    icon: 'file-plus',
+    commandIds: ['file:new', 'file-explorer:new-file'],
+    names: ['新建笔记', 'New note'],
+  },
+  {
+    id: 'new-base',
+    label: '新建数据库',
+    icon: 'database',
+    commandIds: ['bases:new', 'bases:create-new', 'bases:create'],
+    names: ['新建数据库', 'New base'],
+  },
+  {
+    id: 'new-canvas',
+    label: '新建白板',
+    icon: 'layout-dashboard',
+    commandIds: ['canvas:new', 'canvas:create-new'],
+    names: ['新建白板', 'New canvas'],
+  },
+  {
+    id: 'open-file',
+    label: '打开文件',
+    icon: 'search',
+    commandIds: ['switcher:open'],
+    names: ['快速切换器', 'Quick switcher'],
+  },
+  {
+    id: 'web-browser',
+    label: '打开网页浏览器',
+    icon: 'globe',
+    commandIds: ['webviewer:open', 'webviewer:new'],
+    names: ['打开网页浏览器', 'Open web browser', 'Web browser'],
+  },
+];
+
+/**
+ * 在命令表里找出某个动作该执行哪条命令（纯函数）。
+ * 顺序：已知 id → 名称精确匹配 → 名称包含匹配；名称匹配时优先核心插件
+ * （用短前缀判断），避免撞上同名的第三方命令。
+ * 找不到返回 null，由调用方决定是隐藏按钮还是走兜底。
+ */
+function resolveActionCommand(spec, commands) {
+  if (!spec) return null;
+  const list = Array.isArray(commands) ? commands.filter(Boolean) : [];
+  for (const id of spec.commandIds || []) {
+    const hit = list.find((c) => c.id === id);
+    if (hit) return { id: hit.id, name: hit.name, by: 'id' };
+  }
+  const want = (spec.names || []).map((n) => String(n).trim().toLowerCase()).filter(Boolean);
+  if (want.length === 0) return null;
+  const preferCore = (arr) => {
+    if (arr.length === 0) return null;
+    return arr.find((c) => CORE_PREFIXES.some((p) => String(c.id).startsWith(p))) || arr[0];
+  };
+  const exact = preferCore(list.filter((c) => want.includes(String(c.name).trim().toLowerCase())));
+  if (exact) return { id: exact.id, name: exact.name, by: 'name' };
+  const partial = preferCore(
+    list.filter((c) => {
+      const n = String(c.name).trim().toLowerCase();
+      return want.some((w) => n.includes(w));
+    })
+  );
+  if (partial) return { id: partial.id, name: partial.name, by: 'name-partial' };
+  return null;
+}
+
+/** 当前设置下要显示哪些快捷操作（纯函数） */
+function enabledActions(settings) {
+  if (!settings || settings.showActions === false) return [];
+  return ACTION_SPECS.slice();
+}
 class SimpleHomePlugin extends Plugin {
   constructor() {
     super(...arguments);
     /** 延迟构建的文件名索引（仅首次搜索时构建，之后缓存）。启动阶段完全不碰。 */
     this.nameIndex = null;
+    this.actionResolution = {};
   }
 
   async onload() {
@@ -234,6 +320,12 @@ class SimpleHomePlugin extends Plugin {
   }
 
   /** 懒构建文件名索引；搜索模块关闭时不会被调用 */
+  /** Command registry: prefer the public listCommands(), fall back to the internal map */
+  listCommands() {
+    const cmds = this.app.commands;
+    if (cmds && typeof cmds.listCommands === 'function') return cmds.listCommands();
+    return cmds && cmds.commands ? Object.values(cmds.commands) : [];
+  }
   ensureNameIndex() {
     if (!this.nameIndex) this.nameIndex = buildNameIndex(this.app.vault.getFiles());
     return this.nameIndex;
@@ -347,6 +439,8 @@ class HomeView extends ItemView {
       this.searchInput = null;
       this.dropdownEl = null;
     }
+
+    this.renderActions(card);
 
     if (s.showRecent) {
       this.recentHeaderEl = card.createDiv({ cls: 'simple-home-recent-header' });
@@ -465,7 +559,55 @@ class HomeView extends ItemView {
 
   /* ---------------- 近期文档 ---------------- */
 
-  renderRecent() {
+  /* ---------------- 快速操作 ---------------- */
+
+  /**
+   * 搜索框下面那排按钮：调用 Obsidian 自己的命令。
+   * 解析不到命令、又没有兜底的动作直接不显示（并在设置页列出来）。
+   */
+  renderActions(card) {
+    const specs = enabledActions(this.plugin.settings);
+    if (specs.length === 0) return;
+
+    const row = card.createDiv({ cls: 'simple-home-actions' });
+    const commands = this.plugin.listCommands();
+    const report = {};
+
+    for (const spec of specs) {
+      const found = resolveActionCommand(spec, commands);
+      if (!found && spec.id !== 'new-note') {
+        report[spec.id] = null; // 没找到也没有兜底 → 这个按钮不出现
+        continue;
+      }
+      report[spec.id] = found ? found.id : '(内置兜底)';
+
+      const btn = row.createEl('button', { cls: 'simple-home-action', attr: { type: 'button' } });
+      setIcon(btn.createSpan({ cls: 'simple-home-action-icon' }), spec.icon);
+      btn.createSpan({ cls: 'simple-home-action-label', text: spec.label });
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (found) this.app.commands.executeCommandById(found.id);
+        else this.createNoteFallback();
+      });
+    }
+    this.plugin.actionResolution = report;
+  }
+
+  /** 连「新建笔记」命令都解析不到时的兜底（正常走不到这里） */
+  async createNoteFallback() {
+    try {
+      const fm = this.app.fileManager;
+      const folder = fm && fm.getNewFileParent ? fm.getNewFileParent('') : this.app.vault.getRoot();
+      const file =
+        fm && fm.createNewMarkdownFile
+          ? await fm.createNewMarkdownFile(folder, '未命名')
+          : await this.app.vault.create('未命名.md', '');
+      if (file) await this.app.workspace.getLeaf(false).openFile(file);
+    } catch (e) {
+      new Notice('新建笔记失败：' + (e && e.message ? e.message : e));
+    }
+  }  renderRecent() {
     if (!this.recentEl) return; // 模块隐藏
     this.recentEl.empty();
     const s = this.plugin.settings;
@@ -503,7 +645,20 @@ class HomeSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  display() {
+  /** 设置页底部那行诊断：每个按钮用到了哪条命令 */
+  describeActionResolution() {
+    const r = this.plugin.actionResolution || {};
+    const keys = Object.keys(r);
+    if (keys.length === 0) {
+      return '打开一次首页后，这里会列出每个按钮实际用到的命令 id —— 某个按钮没出现时，看这行就知道原因。';
+    }
+    return keys
+      .map((k) => {
+        const spec = ACTION_SPECS.find((a) => a.id === k);
+        return `${spec ? spec.label : k} → ${r[k] || '没有找到对应命令（按钮已隐藏）'}`;
+      })
+      .join('；');
+  }  display() {
     const { containerEl } = this;
     const p = this.plugin;
     const s = p.settings;
@@ -638,6 +793,18 @@ class HomeSettingTab extends PluginSettingTab {
         sl.setLimits(1, 20, 1).setValue(s.recentCount).setDynamicTooltip().onChange(bind('recentCount'))
       );
 
+    /* ---------- 快速操作 ---------- */
+    containerEl.createEl('h3', { text: '快速操作' });
+    containerEl.createEl('p', {
+      cls: 'setting-item-description',
+      text: '搜索框下面那排按钮，对应 Obsidian 空标签页原本的五个入口：新建笔记 / 新建数据库 / 新建白板 / 打开文件 / 打开网页浏览器。它们执行的是 Obsidian 自己的命令，行为与原生一致。',
+    });
+    toggleRow('显示快速操作', 'showActions', '关掉后这排按钮不再出现');
+    containerEl.createEl('p', {
+      cls: 'setting-item-description',
+      text: '命令解析结果：' + this.describeActionResolution(),
+    });
+
     /* ---------- 关于 ---------- */
     containerEl.createEl('h3', { text: '关于' });
     containerEl.createEl('p', {
@@ -666,4 +833,8 @@ module.exports.__test = {
   resolveImageUrl,
   bannerVars,
   bannerClasses,
+  CORE_PREFIXES,
+  ACTION_SPECS,
+  resolveActionCommand,
+  enabledActions,
 };

@@ -14,7 +14,7 @@ A **lightweight new-tab home page** for Obsidian: filename search, a custom page
 
 Home-page plugins in the community store tend to be heavy: statistics cards, pinned notes, bookmarks, background galleries, footer quotes, a trash bin. If all you want is a clean start page, that is a lot of machinery.
 
-This plugin does six things and nothing else:
+This plugin does seven things and nothing else:
 
 | Feature | Detail |
 |---|---|
@@ -23,6 +23,7 @@ This plugin does six things and nothing else:
 | **Banner image** | A picture across the top of the page — width, height, corner radius, fit, alignment, darkening, spacing and shadow are all adjustable. |
 | **Recent files** | Uses Obsidian's own "last opened files" list. 1–20 rows, with relative times. |
 | **Clock** | Date and time at the top; a single 1-second interval that updates one text node. Hidden = no interval at all. |
+| **Quick actions** | A row of buttons under the search box that invoke Obsidian's own commands: new note, new database (Bases), new canvas, open file (quick switcher), open web browser. A button whose command cannot be found hides itself. |
 | **Block switches** | On/off for every block above (banner, clock, avatar, title, greeting, search, recent files). A hidden block creates no DOM, no timer and no index. |
 
 Every empty tab is replaced by this home page automatically.
@@ -64,6 +65,7 @@ If the "trust author" dialog appears, accept it — the plugin runs entirely loc
 | Page header | Show clock · Show avatar + avatar path · Show title + title text · Show greeting |
 | Banner | Show banner · image · width · height · corner radius · fit · alignment · darkening · gap · shadow · flush to top |
 | Search | Show search box |
+| Quick actions | Show the quick-action row; the setting also lists the command id each button resolved to |
 | Recent files | Show recent files · number of rows (1–20) |
 | About | What the plugin reads (and what it never touches) |
 
@@ -125,7 +127,7 @@ MIT — see [LICENSE](LICENSE).
 
 社区里的首页插件普遍偏重：统计卡片、置顶笔记、书签、背景图库、页脚金句、回收站……如果你只是想要一个干净的起始页，这些机构本身就成了负担。
 
-本插件只做六件事：
+本插件只做七件事：
 
 | 功能 | 说明 |
 |---|---|
@@ -134,6 +136,7 @@ MIT — see [LICENSE](LICENSE).
 | **题图** | 页面最上方的一张图 —— 宽度、高度、圆角、填充方式、对齐、压暗、间距、阴影都可调。 |
 | **近期文档** | 用 Obsidian 自己的"最近打开"列表，1–20 条，带相对时间。 |
 | **日期时间** | 顶部实时时钟；一个每秒的定时器，只改一个文本节点。隐藏后定时器根本不启动。 |
+| **快速操作** | 搜索框下面一排按钮，直接调用 Obsidian 自己的命令：新建笔记 / 新建数据库 / 新建白板 / 打开文件 / 打开网页浏览器。解析不到命令的按钮会自动隐藏（设置页会列出解析结果）。 |
 | **模块开关** | 上面每一个模块都能单独显示/隐藏（题图 / 时钟 / 头像 / 名称 / 问候语 / 搜索 / 近期文档）。隐藏的模块不产生 DOM、不跑定时器、不建索引。 |
 
 新标签页（空标签）会自动替换成这个首页。
@@ -181,6 +184,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\deploy.ps1 -Vault "E:\
 | 页面头部 | 显示日期时间 · 显示头像 + 头像路径 · 显示页面名称 + 名称 · 显示问候语 |
 | 题图 | 显示题图 · 图片 · 宽度 · 高度 · 圆角 · 填充 · 对齐 · 压暗 · 间距 · 阴影 · 顶到最上 |
 | 搜索 | 显示搜索框 |
+| 快速操作 | 显示搜索框下面那排按钮；下面是每个按钮实际用到的命令 id |
 | 近期文档 | 显示近期文档 · 显示条数（1–20） |
 | 关于 | 本插件读什么、绝不碰什么 |
 

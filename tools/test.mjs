@@ -37,7 +37,7 @@ const eq = (actual, expected, label) => {
 };
 
 /* ---------- 1. 默认设置 ---------- */
-eq(Object.keys(T.DEFAULT_SETTINGS).length, 20, '默认设置共 20 项');
+eq(Object.keys(T.DEFAULT_SETTINGS).length, 21, '默认设置共 20 项');
 for (const key of ['showBanner', 'showAvatar', 'showTitle', 'showGreeting', 'showClock', 'showSearch', 'showRecent']) {
   eq(T.DEFAULT_SETTINGS[key], true, `${key} 默认显示`);
 }
@@ -154,7 +154,57 @@ eq(T.bannerClasses({ bannerWidth: 'full', bannerFlushTop: true, bannerShadow: tr
 eq(T.bannerClasses({ bannerWidth: 'card' }), [], 'card 不加 is-full');
 eq(T.bannerClasses({ bannerShadow: true }), ['has-shadow'], '只加 shadow');
 
-/* ---------- 10. 导出的类 ---------- */
+/* ---------- 9.5 快速操作：命令解析 ---------- */
+eq(T.ACTION_SPECS.length, 5, '五个快捷操作');
+eq(new Set(T.ACTION_SPECS.map((a) => a.id)).size, 5, '动作 id 不重复');
+eq(
+  T.ACTION_SPECS.map((a) => a.label),
+  ['新建笔记', '新建数据库', '新建白板', '打开文件', '打开网页浏览器'],
+  '顺序与 Obsidian 原生那排一致'
+);
+eq(T.DEFAULT_SETTINGS.showActions, true, '默认显示快速操作');
+
+const cmds = [
+  { id: 'file:new', name: '新建笔记' },
+  { id: 'thirdparty:new-note', name: 'New note' },
+  { id: 'canvas:new', name: 'New canvas' },
+  { id: 'switcher:open', name: 'Quick switcher' },
+  { id: 'bases:whatever', name: '新建数据库' },
+  { id: 'webviewer:open', name: 'Open web browser' },
+];
+const spec = (id) => T.ACTION_SPECS.find((a) => a.id === id);
+
+eq(T.resolveActionCommand(spec('new-note'), cmds).id, 'file:new', '新建笔记按已知 id 命中');
+eq(T.resolveActionCommand(spec('new-note'), cmds).by, 'id', '命中方式 = id');
+eq(T.resolveActionCommand(spec('new-canvas'), cmds).id, 'canvas:new', '白板按 id 命中');
+eq(T.resolveActionCommand(spec('open-file'), cmds).id, 'switcher:open', '打开文件 = 快速切换器');
+eq(T.resolveActionCommand(spec('new-base'), cmds).id, 'bases:whatever', '数据库按名称命中');
+eq(T.resolveActionCommand(spec('new-base'), cmds).by, 'name', '命中方式 = name');
+eq(T.resolveActionCommand(spec('web-browser'), cmds).id, 'webviewer:open', '网页浏览器按精确名命中');
+
+// 同名时优先核心插件（短前缀），别撞上第三方命令
+const dup = [
+  { id: 'thirdparty:new-note', name: '新建笔记' },
+  { id: 'file:new', name: '新建笔记' },
+];
+eq(T.resolveActionCommand(spec('new-note'), dup).id, 'file:new', '同名时选核心插件那条');
+eq(T.resolveActionCommand(spec('new-note'), dup.slice().reverse()).id, 'file:new', '顺序反过来结论不变');
+
+// 部分匹配
+eq(T.resolveActionCommand(spec('open-file'), [{ id: 'switcher:open2', name: '快速切换器：打开' }]).id, 'switcher:open2', '名称包含也能命中');
+eq(T.resolveActionCommand(spec('open-file'), [{ id: 'switcher:open2', name: '快速切换器：打开' }]).by, 'name-partial', '命中方式 = name-partial');
+
+// 解析不到
+eq(T.resolveActionCommand(spec('web-browser'), [{ id: 'x:y', name: '别的东西' }]), null, '找不到返回 null');
+eq(T.resolveActionCommand(spec('web-browser'), []), null, '空命令表返回 null');
+eq(T.resolveActionCommand(spec('web-browser'), null), null, 'null 命令表返回 null');
+eq(T.resolveActionCommand(null, cmds), null, 'null spec 返回 null');
+eq(T.resolveActionCommand(spec('new-note'), [null, undefined, { id: 'file:new', name: '新建笔记' }]).id, 'file:new', '命令表里的空项被跳过');
+
+eq(T.enabledActions({ showActions: true }).length, 5, '开关打开 → 五个都启用');
+eq(T.enabledActions({}).length, 5, '没有该字段时默认启用');
+eq(T.enabledActions({ showActions: false }), [], '开关关闭 → 一个都不启用');
+eq(T.enabledActions(null), [], '设置为空 → 空数组');/* ---------- 10. 导出的类 ---------- */
 ok(typeof SimpleHomePlugin === 'function', '默认导出是插件类');
 eq(SimpleHomePlugin.VIEW_TYPE, 'simple-home-view', '导出 VIEW_TYPE');
 
