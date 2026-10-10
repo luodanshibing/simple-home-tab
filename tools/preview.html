@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Simple Home Tab · 模块与题图预览</title>
+<style>
+  /* Obsidian 亮色主题变量的近似值，让插件的 styles.css 能取到变量 */
+  .frame {
+    --background-primary: #ffffff;
+    --background-secondary: #f6f6f6;
+    --background-modifier-border: #e0e0e0;
+    --background-modifier-hover: #ececec;
+    --text-normal: #2e3338;
+    --text-muted: #888888;
+    --text-faint: #aaaaaa;
+    --interactive-accent: #7f6df2;
+    --text-on-accent: #ffffff;
+    --shadow-s: 0 1px 2px rgba(0, 0, 0, .1);
+    --font-interface: system-ui, "Microsoft YaHei", sans-serif;
+  }
+  body { margin: 0; padding: 24px; background: #2b2b2b; font-family: system-ui, "Microsoft YaHei", sans-serif; }
+  .label { color: #e5e5e5; font-size: 13px; margin: 20px 0 8px; }
+  .label b { color: #fff; }
+  .label code { color: #a5b4fc; }
+  .frame {
+    width: 900px; height: 620px; overflow: hidden;
+    border: 1px solid #444; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    font-family: var(--font-interface);
+  }
+  .frame.short { height: 300px; }
+  .frame:first-of-type { margin-top: 0; }
+</style>
+<!-- 插件自己的样式表（仓库根目录那份，改插件样式后重跑 tools/shot-preview.ps1 即可同步） -->
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<div class="label"><b>① 与页面同宽</b> · 高 200 · 圆角 12 · 无遮罩 <code>bannerWidth=card</code></div>
+<div class="frame">
+  <div class="simple-home simple-home-root">
+    <div class="simple-home-banner" style="--shb-height:200px;--shb-radius:12px;--shb-gap:18px;--shb-fit:cover;--shb-pos:center;--shb-overlay:0">
+      <img src="preview.svg" alt="">
+    </div>
+    <div class="simple-home-top">
+      <div class="simple-home-date">2026年10月10日 星期六</div>
+      <div class="simple-home-clock">23:45:12</div>
+    </div>
+    <div class="simple-home-card">
+      <div class="simple-home-avatar"><div class="simple-home-avatar-initial">L</div></div>
+      <div class="simple-home-title">luodanshibing</div>
+      <div class="simple-home-greet">夜深了，注意休息</div>
+      <div class="simple-home-search"><input class="simple-home-search-input" placeholder="搜索文件名…"></div>
+      <div class="simple-home-recent-header">近期文档</div>
+      <div class="simple-home-recent">
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">库的git追踪规则</div><div class="simple-home-recent-dir">1 Obsidian/Rules</div></div><div class="simple-home-recent-time">5 分钟前</div></div>
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">2026-10-10</div><div class="simple-home-recent-dir">日记</div></div><div class="simple-home-recent-time">2 小时前</div></div>
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">轨道式清库机系统设计</div><div class="simple-home-recent-dir">F Craftlab/F2 项目</div></div><div class="simple-home-recent-time">1 天前</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="label"><b>② 全宽 + 顶到最上</b> · 高 260 · 直角 · 无遮罩 <code>bannerWidth=full, bannerFlushTop=on</code></div>
+<div class="frame">
+  <div class="simple-home simple-home-root">
+    <div class="simple-home-banner is-full is-flush" style="--shb-height:260px;--shb-radius:0px;--shb-gap:22px;--shb-fit:cover;--shb-pos:center;--shb-overlay:0">
+      <img src="preview.svg" alt="">
+    </div>
+    <div class="simple-home-top">
+      <div class="simple-home-date">2026年10月10日 星期六</div>
+      <div class="simple-home-clock">23:45:12</div>
+    </div>
+    <div class="simple-home-card">
+      <div class="simple-home-avatar"><div class="simple-home-avatar-initial">L</div></div>
+      <div class="simple-home-title">luodanshibing</div>
+      <div class="simple-home-greet">夜深了，注意休息</div>
+      <div class="simple-home-search"><input class="simple-home-search-input" placeholder="搜索文件名…"></div>
+      <div class="simple-home-recent-header">近期文档</div>
+      <div class="simple-home-recent">
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">库的git追踪规则</div><div class="simple-home-recent-dir">1 Obsidian/Rules</div></div><div class="simple-home-recent-time">5 分钟前</div></div>
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">2026-10-10</div><div class="simple-home-recent-dir">日记</div></div><div class="simple-home-recent-time">2 小时前</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="label"><b>③ 全宽（不顶到最上）</b> · 高 180 · 圆角 20 · 压暗遮罩 40% <code>bannerOverlay=40</code></div>
+<div class="frame">
+  <div class="simple-home simple-home-root">
+    <div class="simple-home-banner is-full" style="--shb-height:180px;--shb-radius:20px;--shb-gap:18px;--shb-fit:cover;--shb-pos:center;--shb-overlay:0.4">
+      <img src="preview.svg" alt="">
+      <div class="simple-home-banner-overlay"></div>
+    </div>
+    <div class="simple-home-top">
+      <div class="simple-home-date">2026年10月10日 星期六</div>
+      <div class="simple-home-clock">23:45:12</div>
+    </div>
+    <div class="simple-home-card">
+      <div class="simple-home-avatar"><div class="simple-home-avatar-initial">L</div></div>
+      <div class="simple-home-title">luodanshibing</div>
+      <div class="simple-home-greet">夜深了，注意休息</div>
+      <div class="simple-home-search"><input class="simple-home-search-input" placeholder="搜索文件名…"></div>
+      <div class="simple-home-recent-header">近期文档</div>
+      <div class="simple-home-recent">
+        <div class="simple-home-recent-item"><div class="simple-home-recent-main"><div class="simple-home-recent-name">库的git追踪规则</div><div class="simple-home-recent-dir">1 Obsidian/Rules</div></div><div class="simple-home-recent-time">5 分钟前</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="label"><b>④ 模块显示/隐藏</b> · 只留「题图 + 日期时间」，头像/名称/问候/搜索/近期文档全部关掉 <code>show* = off</code></div>
+<div class="frame short">
+  <div class="simple-home simple-home-root">
+    <div class="simple-home-banner is-full" style="--shb-height:180px;--shb-radius:0px;--shb-gap:20px;--shb-fit:cover;--shb-pos:center;--shb-overlay:0">
+      <img src="preview.svg" alt="">
+    </div>
+    <div class="simple-home-top">
+      <div class="simple-home-date">2026年10月10日 星期六</div>
+      <div class="simple-home-clock">23:45:12</div>
+    </div>
+    <div class="simple-home-card"></div>
+  </div>
+</div>
+
+</body>
+</html>

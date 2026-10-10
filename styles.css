@@ -1,0 +1,263 @@
+/* Simple Home Tab — 极简新标签页样式 */
+/* 全部使用 Obsidian 主题变量，自动适配亮/暗主题 */
+
+.simple-home-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  overflow-y: auto;
+  padding: 6vh 24px 40px;
+  box-sizing: border-box;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-family: var(--font-interface);
+}
+
+.simple-home-hidden {
+  display: none !important;
+}
+
+/* 顶部日期与时钟 */
+.simple-home-top {
+  text-align: center;
+  margin-bottom: 4vh;
+}
+.simple-home-date {
+  font-size: 15px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.simple-home-clock {
+  font-size: 52px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-normal);
+  line-height: 1.1;
+  letter-spacing: 1px;
+}
+
+/* 主卡 */
+.simple-home-card {
+  width: min(640px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--background-primary);
+}
+
+/* 头像 */
+.simple-home-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--interactive-accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.simple-home-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.simple-home-avatar-initial {
+  color: var(--text-on-accent, #fff);
+  font-size: 40px;
+  font-weight: 600;
+}
+
+/* 名称 */
+.simple-home-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+.simple-home-greet {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 6px 0 22px;
+}
+
+/* 搜索框 */
+.simple-home-search {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+.simple-home-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.simple-home-search-input:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+/* 搜索结果下拉 */
+.simple-home-dropdown {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-s);
+  z-index: 50;
+}
+.simple-home-dropdown.hidden {
+  display: none;
+}
+.simple-home-result-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.simple-home-result-item:last-child {
+  border-bottom: none;
+}
+.simple-home-result-item:hover {
+  background: var(--background-modifier-hover);
+}
+.simple-home-result-name {
+  font-size: 14px;
+  color: var(--text-normal);
+  flex-shrink: 0;
+}
+.simple-home-result-path {
+  font-size: 12px;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.simple-home-result-empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 近期文档 */
+.simple-home-recent-header {
+  width: 100%;
+  max-width: 520px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 26px 0 10px;
+}
+.simple-home-recent {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.simple-home-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--background-secondary);
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+.simple-home-recent-item:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border);
+}
+.simple-home-recent-main {
+  min-width: 0;
+  overflow: hidden;
+}
+.simple-home-recent-name {
+  font-size: 14px;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.simple-home-recent-dir {
+  font-size: 12px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.simple-home-recent-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.simple-home-recent-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ---------- 题图 ---------- */
+/* 全部走 CSS 变量：设置一改只换变量值，不重建 DOM、不触发额外布局 */
+.simple-home-banner {
+  position: relative;
+  width: min(640px, 92vw);
+  height: var(--shb-height, 200px);
+  border-radius: var(--shb-radius, 12px);
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-bottom: var(--shb-gap, 18px);
+  background: var(--background-secondary);
+}
+.simple-home-banner img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: var(--shb-fit, cover);
+  object-position: var(--shb-pos, center);
+}
+.simple-home-banner-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, var(--shb-overlay, 0));
+}
+.simple-home-banner.has-shadow {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+}
+/* 全宽：抵消 .simple-home-root 的左右 24px 内边距 */
+.simple-home-banner.is-full {
+  width: calc(100% + 48px);
+  max-width: none;
+  margin-left: -24px;
+  margin-right: -24px;
+}
+/* 顶到最上：再抵消 .simple-home-root 的顶部 6vh 内边距 */
+.simple-home-banner.is-full.is-flush {
+  margin-top: -6vh;
+}
