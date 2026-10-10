@@ -23,11 +23,13 @@
   .label b { color: #fff; }
   .label code { color: #a5b4fc; }
   .frame {
-    width: 900px; height: 620px; overflow: hidden;
+    width: 900px; height: 700px; overflow: hidden;
     border: 1px solid #444; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
     font-family: var(--font-interface);
   }
-  .frame.short { height: 300px; }
+  /* 注意：插件里 .simple-home-root 的上下留白用的是 vh（按整个预览页高度算），
+     所以这里的框要留够高度，否则内容会被裁掉 —— 与插件行为无关，纯预览页的事。 */
+  .frame.short { height: 520px; }
   .frame:first-of-type { margin-top: 0; }
 </style>
 <!-- 插件自己的样式表（仓库根目录那份，改插件样式后重跑 tools/shot-preview.ps1 即可同步） -->

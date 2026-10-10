@@ -29,7 +29,7 @@ Write-Output "rendering: $uri"
 Start-Process -FilePath $exe -ArgumentList @(
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
   "--user-data-dir=$env:TEMP\edge-shp-preview", '--virtual-time-budget=8000', '--hide-scrollbars',
-  '--window-size=960,2500', "--screenshot=$out", $uri
+  '--window-size=960,2900', "--screenshot=$out", $uri
 ) -Wait -NoNewWindow
 
 if (Test-Path $out) {
