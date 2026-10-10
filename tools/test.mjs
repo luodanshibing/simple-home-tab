@@ -212,7 +212,29 @@ eq(T.pageWidthCss({ pageWidthRem: 200 }), '95rem', '超上限夹到 95rem');
 eq(T.pageWidthCss({ pageWidthRem: 10 }), '45rem', '低于下限夹到 45rem');
 eq(T.pageWidthCss({ pageWidthRem: 'abc' }), '50rem', '非数字回退 50rem');
 eq(T.pageWidthCss({}), '50rem', '缺字段回退 50rem');
-eq(T.pageWidthCss(null), '50rem', 'null 回退 50rem');/* ---------- 10. 导出的类 ---------- */
+eq(T.pageWidthCss(null), '50rem', 'null 回退 50rem');/* ---------- 9.7 最近文档：过滤已删除 + 先过滤后截断 ---------- */
+const alive = (p) => (['a.md', 'b.md', 'c.md', 'd.md'].indexOf(p) >= 0 ? { path: p } : null);
+eq(T.collectRecentFiles(['a.md', 'deleted1.md', 'b.md'], alive, 8).map((e) => e.path), ['a.md', 'b.md'], '已删除的路径被过滤');
+eq(
+  T.collectRecentFiles(['dead1.md', 'dead2.md', 'a.md', 'b.md', 'c.md'], alive, 3).map((e) => e.path),
+  ['a.md', 'b.md', 'c.md'],
+  '先过滤后截断：已删文件不占名额（回归测试）'
+);
+eq(T.collectRecentFiles(['a.md', 'b.md', 'c.md'], alive, 2).map((e) => e.path), ['a.md', 'b.md'], '截断生效');
+eq(T.collectRecentFiles(['a.md', 'b.md'], alive, 8).map((e) => e.path), ['a.md', 'b.md'], '顺序保持');
+eq(T.collectRecentFiles(['dead.md'], alive, 8), [], '全已删 → 空数组');
+eq(T.collectRecentFiles(null, alive, 8), [], 'null 路径表 → 空数组');
+eq(T.collectRecentFiles(['a.md'], null, 8), [], 'resolve 不是函数 → 空数组');
+eq(T.collectRecentFiles(['a.md', '', null, 'b.md'], alive, 8).map((e) => e.path), ['a.md', 'b.md'], '非字符串与空路径被跳过');
+eq(
+  T.collectRecentFiles(['a.md'], () => {
+    throw new Error('boom');
+  }, 8),
+  [],
+  'resolve 抛错时跳过、不崩'
+);
+eq(T.collectRecentFiles(['a.md'], alive, NaN).length, 1, 'limit 非数字时用默认值');
+eq(T.collectRecentFiles(['a.md'], alive, 8)[0].file.path, 'a.md', '返回 {path, file} 结构');/* ---------- 10. 导出的类 ---------- */
 ok(typeof SimpleHomePlugin === 'function', '默认导出是插件类');
 eq(SimpleHomePlugin.VIEW_TYPE, 'simple-home-view', '导出 VIEW_TYPE');
 

@@ -21,7 +21,7 @@ This plugin does seven things and nothing else:
 | **Search** | Search by file name or path, results appear as you type (120 ms debounce). The file-name index is built **the first time you search**, then cached. Hide the search box and the index is never built at all. |
 | **Page name & avatar** | Any title; the avatar can be an image URL or a path inside your vault. Leave it empty to show the first character of the title. |
 | **Banner image** | A picture across the top of the page — width, height, corner radius, fit, alignment, darkening, spacing and shadow are all adjustable. |
-| **Recent files** | Uses Obsidian's own "last opened files" list. 1–20 rows, with relative times. |
+| **Recent files** | Uses Obsidian's own "last opened files" list. 1–20 rows, with relative times. Deleted files are filtered out (and the limit applies *after* filtering), and clicking a stale row never re-creates the note. |
 | **Clock** | Date and time at the top; a single 1-second interval that updates one text node. Hidden = no interval at all. |
 | **Quick actions** | A row of buttons under the search box that invoke Obsidian's own commands: new note, new database (Bases), new canvas, open file (quick switcher), open web browser. A button whose command cannot be found hides itself. |
 | **Block switches** | On/off for every block above (banner, clock, avatar, title, greeting, search, recent files). A hidden block creates no DOM, no timer and no index. |
@@ -135,7 +135,7 @@ MIT — see [LICENSE](LICENSE).
 | **搜索** | 按文件名或路径搜索，输入即出结果（120ms 防抖）。文件名索引**在你第一次搜索时**才构建，之后缓存复用；把搜索框关掉，索引根本不会被建。 |
 | **页面名称与头像** | 标题随意填；头像可以用网络图片 URL，也可以是库内图片路径。留空则显示标题首字。 |
 | **题图** | 页面最上方的一张图 —— 宽度、高度、圆角、填充方式、对齐、压暗、间距、阴影都可调。 |
-| **近期文档** | 用 Obsidian 自己的"最近打开"列表，1–20 条，带相对时间。 |
+| **近期文档** | 用 Obsidian 自己的"最近打开"列表，1–20 条，带相对时间。**已删除的文件会被自动过滤掉**（条数上限是过滤之后才算），点到失效条目也不会把笔记重新建出来。 |
 | **日期时间** | 顶部实时时钟；一个每秒的定时器，只改一个文本节点。隐藏后定时器根本不启动。 |
 | **快速操作** | 搜索框下面一排按钮，直接调用 Obsidian 自己的命令：新建笔记 / 新建数据库 / 新建白板 / 打开文件 / 打开网页浏览器。解析不到命令的按钮会自动隐藏（设置页会列出解析结果）。 |
 | **模块开关** | 上面每一个模块都能单独显示/隐藏（题图 / 时钟 / 头像 / 名称 / 问候语 / 搜索 / 近期文档）。隐藏的模块不产生 DOM、不跑定时器、不建索引。 |

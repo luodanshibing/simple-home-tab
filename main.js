@@ -271,6 +271,28 @@ function enabledActions(settings) {
 function pageWidthCss(settings) {
   const s = settings || {};
   return `${clampNumber(s.pageWidthRem, 45, 95, 50)}rem`;
+}/**
+ * 最近文档：先过滤掉已经不存在的文件，再按条数截断。
+ * 必须"先过滤后截断" —— Obsidian 的 getLastOpenFiles() 不会清理已删除的路径，
+ * 若先截断，已删文件会把名额占满，列表看起来就少了。
+ */
+function collectRecentFiles(paths, resolve, limit) {
+  const out = [];
+  const max = Number.isFinite(limit) ? limit : 8;
+  if (!Array.isArray(paths) || typeof resolve !== 'function') return out;
+  for (const p of paths) {
+    if (typeof p !== 'string' || p.length === 0) continue;
+    let file = null;
+    try {
+      file = resolve(p);
+    } catch (e) {
+      file = null;
+    }
+    if (!file) continue;
+    out.push({ path: p, file: file });
+    if (out.length >= max) break;
+  }
+  return out;
 }class SimpleHomePlugin extends Plugin {
   constructor() {
     super(...arguments);
@@ -287,12 +309,13 @@ function pageWidthCss(settings) {
     this.registerEvent(this.app.workspace.on('layout-change', replace));
     this.registerEvent(this.app.workspace.on('active-leaf-change', replace));
 
-    const invalidate = () => {
+    const vaultChanged = () => {
       this.nameIndex = null;
+      this.refreshRecentLists();
     };
-    this.registerEvent(this.app.vault.on('create', invalidate));
-    this.registerEvent(this.app.vault.on('delete', invalidate));
-    this.registerEvent(this.app.vault.on('rename', invalidate));
+    this.registerEvent(this.app.vault.on('create', vaultChanged));
+    this.registerEvent(this.app.vault.on('delete', vaultChanged));
+    this.registerEvent(this.app.vault.on('rename', vaultChanged));
 
     this.addCommand({
       id: 'open-home',
@@ -331,7 +354,25 @@ function pageWidthCss(settings) {
     if (cmds && typeof cmds.listCommands === 'function') return cmds.listCommands();
     return cmds && cmds.commands ? Object.values(cmds.commands) : [];
   }
-  ensureNameIndex() {
+  /** 最近文档条目：过滤掉已删除的文件，再按设置条数截断 */
+  recentEntries(paths) {
+    return collectRecentFiles(
+      paths,
+      (p) => {
+        const f = this.app.vault.getAbstractFileByPath(p);
+        return f instanceof TFile ? f : null;
+      },
+      clampNumber(this.settings.recentCount, 1, 20, 8)
+    );
+  }
+
+  /** 库内文件增删改名后，只重渲染"近期文档"那一块（不重建整个界面） */
+  refreshRecentLists() {
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
+      const view = leaf.view;
+      if (view instanceof HomeView && view.recentEl) view.renderRecent();
+    }
+  }  ensureNameIndex() {
     if (!this.nameIndex) this.nameIndex = buildNameIndex(this.app.vault.getFiles());
     return this.nameIndex;
   }
@@ -616,19 +657,17 @@ class HomeView extends ItemView {
   }  renderRecent() {
     if (!this.recentEl) return; // 模块隐藏
     this.recentEl.empty();
-    const s = this.plugin.settings;
-    let paths = this.app.workspace.getLastOpenFiles();
+    const paths = this.app.workspace.getLastOpenFiles();
 
-    if (!paths || paths.length === 0) {
+    const entries = this.plugin.recentEntries(paths);
+    if (entries.length === 0) {
       this.recentEl.createDiv({ cls: 'simple-home-recent-empty' }).textContent = '还没有打开过文档';
       return;
     }
-    paths = paths.slice(0, clampNumber(s.recentCount, 1, 20, 8));
 
     const frag = document.createDocumentFragment();
-    for (const p of paths) {
-      const file = this.app.vault.getAbstractFileByPath(p);
-      if (!(file instanceof TFile)) continue;
+    for (const entry of entries) {
+      const file = entry.file;
 
       const row = frag.createDiv({ cls: 'simple-home-recent-item' });
       const left = row.createDiv({ cls: 'simple-home-recent-main' });
@@ -636,7 +675,15 @@ class HomeView extends ItemView {
       left.createDiv({ cls: 'simple-home-recent-dir' }).textContent = file.parent ? file.parent.path : '/';
       row.createDiv({ cls: 'simple-home-recent-time' }).textContent = relTime(file.stat.mtime);
       row.addEventListener('click', () => {
-        this.app.workspace.openLinkText(file.path, file.path, false);
+        // 这里必须用 openFile(TFile)，不能用 openLinkText(路径)：
+        // 后者在目标不存在时会把文件【新建出来】—— 点一条失效的最近文档就凭空造出笔记。
+        const target = this.app.vault.getAbstractFileByPath(file.path);
+        if (!(target instanceof TFile)) {
+          new Notice('这个文件已经不在了，已从列表移除');
+          this.renderRecent();
+          return;
+        }
+        this.app.workspace.getLeaf(false).openFile(target);
       });
     }
     this.recentEl.appendChild(frag);
@@ -844,4 +891,5 @@ module.exports.__test = {
   resolveActionCommand,
   enabledActions,
   pageWidthCss,
+  collectRecentFiles,
 };
