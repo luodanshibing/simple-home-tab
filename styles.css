@@ -40,7 +40,7 @@
 
 /* 主卡 */
 .simple-home-card {
-  width: min(640px, 92vw);
+  width: min(var(--shp-width, 50rem), 92vw);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,7 +88,7 @@
 .simple-home-search {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: none;
 }
 .simple-home-search-input {
   width: 100%;
@@ -160,7 +160,7 @@
 /* 近期文档 */
 .simple-home-recent-header {
   width: 100%;
-  max-width: 520px;
+  max-width: none;
   text-align: left;
   font-size: 13px;
   font-weight: 600;
@@ -171,7 +171,7 @@
 }
 .simple-home-recent {
   width: 100%;
-  max-width: 520px;
+  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -226,7 +226,7 @@
 /* 全部走 CSS 变量：设置一改只换变量值，不重建 DOM、不触发额外布局 */
 .simple-home-banner {
   position: relative;
-  width: min(640px, 92vw);
+  width: min(var(--shp-width, 50rem), 92vw);
   height: var(--shb-height, 200px);
   border-radius: var(--shb-radius, 12px);
   overflow: hidden;
@@ -267,9 +267,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   width: 100%;
-  max-width: 520px;
   margin-top: 18px;
 }
 .simple-home-action {
@@ -277,8 +276,8 @@
   align-items: center;
   gap: 7px;
   height: 34px;
-  padding: 0 14px;
-  font-size: 13.5px;
+  padding: 0 12px;
+  font-size: 13px;
   font-family: inherit;
   line-height: 1;
   color: var(--text-normal);

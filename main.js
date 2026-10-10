@@ -44,6 +44,7 @@ const DEFAULT_SETTINGS = {
   /* 页面头部 */
   title: '我的工作台',
   avatar: '',
+  pageWidthRem: 50,
 
   /* 近期文档 */
   recentCount: 8,
@@ -266,7 +267,11 @@ function enabledActions(settings) {
   if (!settings || settings.showActions === false) return [];
   return ACTION_SPECS.slice();
 }
-class SimpleHomePlugin extends Plugin {
+/** 页面内容宽度：与 Softype 主题的 width-45 ~ width-95 档位保持一致（单位 rem） */
+function pageWidthCss(settings) {
+  const s = settings || {};
+  return `${clampNumber(s.pageWidthRem, 45, 95, 50)}rem`;
+}class SimpleHomePlugin extends Plugin {
   constructor() {
     super(...arguments);
     /** 延迟构建的文件名索引（仅首次搜索时构建，之后缓存）。启动阶段完全不碰。 */
@@ -398,6 +403,7 @@ class HomeView extends ItemView {
   buildUI() {
     const s = this.plugin.settings;
     const root = this.contentEl.createDiv({ cls: 'simple-home simple-home-root' });
+    root.style.setProperty('--shp-width', pageWidthCss(s));
 
     if (s.showBanner) this.renderBanner(root);
 
@@ -837,4 +843,5 @@ module.exports.__test = {
   ACTION_SPECS,
   resolveActionCommand,
   enabledActions,
+  pageWidthCss,
 };

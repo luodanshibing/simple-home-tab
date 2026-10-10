@@ -37,7 +37,7 @@ const eq = (actual, expected, label) => {
 };
 
 /* ---------- 1. 默认设置 ---------- */
-eq(Object.keys(T.DEFAULT_SETTINGS).length, 21, '默认设置共 20 项');
+eq(Object.keys(T.DEFAULT_SETTINGS).length, 22, '默认设置共 20 项');
 for (const key of ['showBanner', 'showAvatar', 'showTitle', 'showGreeting', 'showClock', 'showSearch', 'showRecent']) {
   eq(T.DEFAULT_SETTINGS[key], true, `${key} 默认显示`);
 }
@@ -204,7 +204,15 @@ eq(T.resolveActionCommand(spec('new-note'), [null, undefined, { id: 'file:new', 
 eq(T.enabledActions({ showActions: true }).length, 5, '开关打开 → 五个都启用');
 eq(T.enabledActions({}).length, 5, '没有该字段时默认启用');
 eq(T.enabledActions({ showActions: false }), [], '开关关闭 → 一个都不启用');
-eq(T.enabledActions(null), [], '设置为空 → 空数组');/* ---------- 10. 导出的类 ---------- */
+eq(T.enabledActions(null), [], '设置为空 → 空数组');/* ---------- 9.6 页面宽度 ---------- */
+eq(T.DEFAULT_SETTINGS.pageWidthRem, 50, '默认页面宽度 = 50rem（对齐 Softype）');
+eq(T.pageWidthCss({ pageWidthRem: 50 }), '50rem', '50 → 50rem');
+eq(T.pageWidthCss({ pageWidthRem: 75 }), '75rem', '75 → 75rem');
+eq(T.pageWidthCss({ pageWidthRem: 200 }), '95rem', '超上限夹到 95rem');
+eq(T.pageWidthCss({ pageWidthRem: 10 }), '45rem', '低于下限夹到 45rem');
+eq(T.pageWidthCss({ pageWidthRem: 'abc' }), '50rem', '非数字回退 50rem');
+eq(T.pageWidthCss({}), '50rem', '缺字段回退 50rem');
+eq(T.pageWidthCss(null), '50rem', 'null 回退 50rem');/* ---------- 10. 导出的类 ---------- */
 ok(typeof SimpleHomePlugin === 'function', '默认导出是插件类');
 eq(SimpleHomePlugin.VIEW_TYPE, 'simple-home-view', '导出 VIEW_TYPE');
 

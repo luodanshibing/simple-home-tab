@@ -34,7 +34,7 @@ Every empty tab is replaced by this home page automatically.
 |---|---|
 | Show banner | On/off |
 | Banner image | An image URL, or a path inside the vault. Empty = nothing is rendered. |
-| Width | **Same as page** (aligns with the 640px content column) or **Full width** (edge to edge) |
+| Width | **Same as page** (aligns with the page content column) or **Full width** (edge to edge) |
 | Height | 80–600 px |
 | Corner radius | 0–40 px |
 | Image fit | Crop to fill (`cover`) or show the whole image (`contain`) |
@@ -62,6 +62,7 @@ If the "trust author" dialog appears, accept it — the plugin runs entirely loc
 
 | Section | Items |
 |---|---|
+| Page | Page width in rem 鈥?same ladder as the Softype theme (width-45 鈥?width-95); 50rem 鈮?800px |
 | Page header | Show clock · Show avatar + avatar path · Show title + title text · Show greeting |
 | Banner | Show banner · image · width · height · corner radius · fit · alignment · darkening · gap · shadow · flush to top |
 | Search | Show search box |
@@ -147,7 +148,7 @@ MIT — see [LICENSE](LICENSE).
 |---|---|
 | 显示题图 | 开 / 关 |
 | 题图图片 | 网络图片 URL，或库内图片路径。留空 = 不渲染任何东西 |
-| 宽度 | **与页面同宽**（和 640px 内容列对齐）或 **全宽**（铺满整个视图） |
+| 宽度 | **与页面同宽**（和页面内容列对齐，宽度见「页面」分组）或 **全宽**（铺满整个视图） |
 | 高度 | 80–600 px |
 | 圆角 | 0–40 px |
 | 图片填充 | 裁切铺满（`cover`）或完整显示（`contain`） |
@@ -181,6 +182,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\deploy.ps1 -Vault "E:\
 
 | 分组 | 项目 |
 |---|---|
+| 页面 | 页面宽度（rem，与 Softype 主题的 width-45 ~ width-95 档位一致；50rem ≈ 800px） |
 | 页面头部 | 显示日期时间 · 显示头像 + 头像路径 · 显示页面名称 + 名称 · 显示问候语 |
 | 题图 | 显示题图 · 图片 · 宽度 · 高度 · 圆角 · 填充 · 对齐 · 压暗 · 间距 · 阴影 · 顶到最上 |
 | 搜索 | 显示搜索框 |
