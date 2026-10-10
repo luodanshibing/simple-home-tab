@@ -99,6 +99,8 @@ const index = T.buildNameIndex([
   { basename: '2026-10-10', path: '日记/2026-10-10.md' },
   { basename: 'README', path: 'README.md' },
 ]);
+eq(index[0].path, '1 Obsidian/Rules/库的git追踪规则.md', 'index keeps the original-case path');
+eq(index[0].name, '库的git追踪规则', 'index keeps the original-case name');
 eq(index.length, 3, '索引条数');
 eq(index[0].n, '库的git追踪规则'.toLowerCase(), '索引保存小写名称');
 eq(index[0].p, '1 obsidian/rules/库的git追踪规则.md', '索引保存小写路径');

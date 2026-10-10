@@ -142,7 +142,7 @@ function searchFiles(index, query, limit) {
 /** 把 vault 文件表转成搜索索引（小写文件名 + 小写路径） */
 function buildNameIndex(files) {
   if (!Array.isArray(files)) return [];
-  return files.map((f) => ({ n: String(f.basename).toLowerCase(), p: String(f.path).toLowerCase() }));
+  return files.map((f) => ({ n: String(f.basename).toLowerCase(), p: String(f.path).toLowerCase(), name: String(f.basename), path: String(f.path) }));
 }
 
 /**
@@ -594,11 +594,18 @@ class HomeView extends ItemView {
     }
     for (const m of matches) {
       const item = this.dropdownEl.createDiv({ cls: 'simple-home-result-item' });
-      item.createDiv({ cls: 'simple-home-result-name' }).textContent = m.n;
-      item.createDiv({ cls: 'simple-home-result-path' }).textContent = m.p;
+      item.createDiv({ cls: 'simple-home-result-name' }).textContent = m.name || m.n;
+      item.createDiv({ cls: 'simple-home-result-path' }).textContent = m.path || m.p;
       item.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.app.workspace.openLinkText(m.p, m.p, false);
+        // 同样不能用 openLinkText(小写路径)：索引里存的是小写，在大小写敏感的
+        // 系统（Android / iOS）上会凭空新建一个同名小写文件。用真实路径 + openFile。
+        const target = this.app.vault.getAbstractFileByPath(m.path || m.p);
+        if (target instanceof TFile) {
+          this.app.workspace.getLeaf(false).openFile(target);
+        } else {
+          new Notice('这个文件已经不在了');
+        }
         this.clearSearch();
       });
     }
