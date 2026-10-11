@@ -45,6 +45,7 @@ const DEFAULT_SETTINGS = {
   title: '我的工作台',
   avatar: '',
   pageWidthRem: 50,
+  pageWidthTheme: true, // theme reading width (--file-line-width)
 
   /* 近期文档 */
   recentCount: 8,
@@ -270,6 +271,7 @@ function enabledActions(settings) {
 /** 页面内容宽度：与 Softype 主题的 width-45 ~ width-95 档位保持一致（单位 rem） */
 function pageWidthCss(settings) {
   const s = settings || {};
+  if (s.pageWidthTheme) return 'var(--file-line-width, 700px)';
   return `${clampNumber(s.pageWidthRem, 45, 95, 50)}rem`;
 }/**
  * 最近文档：先过滤掉已经不存在的文件，再按条数截断。
@@ -774,6 +776,10 @@ class HomeSettingTab extends PluginSettingTab {
       .addText((t) =>
         t.setPlaceholder('https://… 或 图片路径').setValue(s.bannerPath).onChange(bind('bannerPath', (v) => v.trim()))
       );
+    new Setting(containerEl)
+      .setName('页面宽度跟随主题')
+      .setDesc('开：用主题的阅读宽度（--file-line-width，跟笔记正文一致）；关：用自定义档位')
+      .addToggle((t) => t.setValue(!!s.pageWidthTheme).onChange(bind('pageWidthTheme')));
     new Setting(containerEl)
       .setName('题图宽度')
       .setDesc('全宽 = 铺满整个视图；与页面同宽 = 和下方内容列对齐')

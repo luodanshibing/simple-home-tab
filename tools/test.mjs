@@ -37,7 +37,7 @@ const eq = (actual, expected, label) => {
 };
 
 /* ---------- 1. 默认设置 ---------- */
-eq(Object.keys(T.DEFAULT_SETTINGS).length, 22, '默认设置共 20 项');
+eq(Object.keys(T.DEFAULT_SETTINGS).length, 23, '默认设置共 23 项');
 for (const key of ['showBanner', 'showAvatar', 'showTitle', 'showGreeting', 'showClock', 'showSearch', 'showRecent']) {
   eq(T.DEFAULT_SETTINGS[key], true, `${key} 默认显示`);
 }
@@ -208,6 +208,8 @@ eq(T.enabledActions({}).length, 5, '没有该字段时默认启用');
 eq(T.enabledActions({ showActions: false }), [], '开关关闭 → 一个都不启用');
 eq(T.enabledActions(null), [], '设置为空 → 空数组');/* ---------- 9.6 页面宽度 ---------- */
 eq(T.DEFAULT_SETTINGS.pageWidthRem, 50, '默认页面宽度 = 50rem（对齐 Softype）');
+eq(T.DEFAULT_SETTINGS.pageWidthTheme, true, '默认跟随主题阅读宽度');
+eq(T.pageWidthCss({ pageWidthTheme: true, pageWidthRem: 50 }), 'var(--file-line-width, 700px)', '跟随主题时用主题变量');
 eq(T.pageWidthCss({ pageWidthRem: 50 }), '50rem', '50 → 50rem');
 eq(T.pageWidthCss({ pageWidthRem: 75 }), '75rem', '75 → 75rem');
 eq(T.pageWidthCss({ pageWidthRem: 200 }), '95rem', '超上限夹到 95rem');
