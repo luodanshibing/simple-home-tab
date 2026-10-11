@@ -180,16 +180,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 12px;
-  border-radius: 8px;
+  padding: 9px 2px;
+  border-radius: 0;
   cursor: pointer;
-  background: var(--background-secondary);
-  border: 1px solid transparent;
-  transition: background 0.12s, border-color 0.12s;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background 0.12s;
+}
+.simple-home-recent-item:last-child {
+  border-bottom: none;
 }
 .simple-home-recent-item:hover {
   background: var(--background-modifier-hover);
-  border-color: var(--background-modifier-border);
+  border-radius: 6px;
 }
 .simple-home-recent-main {
   min-width: 0;
