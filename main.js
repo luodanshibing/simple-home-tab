@@ -274,10 +274,15 @@ function pageWidthCss(settings) {
   if (s.pageWidthTheme) return 'var(--file-line-width, 700px)';
   return `${clampNumber(s.pageWidthRem, 45, 95, 50)}rem`;
 }/**
- * 最近文档：先过滤掉已经不存在的文件，再按条数截断。
+ * 最近文档：先过滤掉已经不存在的文件 → 去重 → 按【修改时间倒序】→ 按条数截断。
  * 必须"先过滤后截断" —— Obsidian 的 getLastOpenFiles() 不会清理已删除的路径，
  * 若先截断，已删文件会把名额占满，列表看起来就少了。
  */
+function mtimeOf(file) {
+  const m = file && file.stat ? Number(file.stat.mtime) : NaN;
+  return Number.isFinite(m) ? m : 0;
+}
+
 function collectRecentFiles(paths, resolve, limit) {
   const out = [];
   const max = Number.isFinite(limit) ? limit : 8;
@@ -291,10 +296,15 @@ function collectRecentFiles(paths, resolve, limit) {
       file = null;
     }
     if (!file) continue;
+    if (out.some((e) => e.path === p)) continue; // 同一路径可能重复出现
     out.push({ path: p, file: file });
-    if (out.length >= max) break;
   }
-  return out;
+  out.sort((a, b) => {
+    const d = mtimeOf(b.file) - mtimeOf(a.file);
+    if (d !== 0) return d;
+    return String(a.path).localeCompare(String(b.path));
+  });
+  return out.slice(0, max);
 }class SimpleHomePlugin extends Plugin {
   constructor() {
     super(...arguments);
@@ -670,7 +680,7 @@ class HomeView extends ItemView {
 
     const entries = this.plugin.recentEntries(paths);
     if (entries.length === 0) {
-      this.recentEl.createDiv({ cls: 'simple-home-recent-empty' }).textContent = '还没有打开过文档';
+      this.recentEl.createDiv({ cls: 'simple-home-recent-empty' }).textContent = '还没有文档';
       return;
     }
 
@@ -854,7 +864,7 @@ class HomeSettingTab extends PluginSettingTab {
     toggleRow('显示近期文档', 'showRecent');
     new Setting(containerEl)
       .setName('显示条数')
-      .setDesc('1–20 条')
+      .setDesc('1–20 条；按修改时间从新到旧排列')
       .addSlider((sl) =>
         sl.setLimits(1, 20, 1).setValue(s.recentCount).setDynamicTooltip().onChange(bind('recentCount'))
       );
@@ -875,7 +885,7 @@ class HomeSettingTab extends PluginSettingTab {
     containerEl.createEl('h3', { text: '关于' });
     containerEl.createEl('p', {
       cls: 'setting-item-description',
-      text: '本插件只读取文件名、路径、修改时间与「最近打开」列表，不修改任何笔记，也不联网。',
+      text: '本插件只读取文件名、路径与修改时间，不修改任何笔记，也不联网。',
     });
   }
 }

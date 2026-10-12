@@ -225,7 +225,37 @@ eq(
   '先过滤后截断：已删文件不占名额（回归测试）'
 );
 eq(T.collectRecentFiles(['a.md', 'b.md', 'c.md'], alive, 2).map((e) => e.path), ['a.md', 'b.md'], '截断生效');
-eq(T.collectRecentFiles(['a.md', 'b.md'], alive, 8).map((e) => e.path), ['a.md', 'b.md'], '顺序保持');
+eq(T.collectRecentFiles(['a.md', 'b.md'], alive, 8).map((e) => e.path), ['a.md', 'b.md'], '都存活时按路径稳定排序（fixture 无 mtime）');
+
+/* ---------- 9.8 最近文档：按修改时间倒序（2026-10-12 新增） ---------- */
+const withMtime = (map) => (p) => (map[p] === undefined ? null : { path: p, stat: { mtime: map[p] } });
+const mt = withMtime({ 'old.md': 1000, 'mid.md': 2000, 'new.md': 3000 });
+eq(
+  T.collectRecentFiles(['old.md', 'new.md', 'mid.md'], mt, 8).map((e) => e.path),
+  ['new.md', 'mid.md', 'old.md'],
+  '按 mtime 倒序（与传入顺序无关）'
+);
+eq(
+  T.collectRecentFiles(['mid.md', 'old.md', 'new.md'], mt, 2).map((e) => e.path),
+  ['new.md', 'mid.md'],
+  '先排序再截断 → 留下的是最新的 2 条'
+);
+eq(
+  T.collectRecentFiles(['old.md', 'old.md', 'new.md'], mt, 8).map((e) => e.path),
+  ['new.md', 'old.md'],
+  '重复路径去重'
+);
+eq(
+  T.collectRecentFiles(['x.md', 'y.md'], withMtime({ 'x.md': 500, 'y.md': 500 }), 8).map((e) => e.path),
+  ['x.md', 'y.md'],
+  'mtime 相同 → 按路径稳定排序'
+);
+const noStat = (p) => ({ path: p });
+eq(
+  T.collectRecentFiles(['b.md', 'a.md'], noStat, 8).map((e) => e.path),
+  ['a.md', 'b.md'],
+  '没有 stat 的文件当作 mtime=0，仍稳定'
+);
 eq(T.collectRecentFiles(['dead.md'], alive, 8), [], '全已删 → 空数组');
 eq(T.collectRecentFiles(null, alive, 8), [], 'null 路径表 → 空数组');
 eq(T.collectRecentFiles(['a.md'], null, 8), [], 'resolve 不是函数 → 空数组');
