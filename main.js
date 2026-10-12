@@ -328,6 +328,9 @@ function collectRecentFiles(paths, resolve, limit) {
     this.registerEvent(this.app.vault.on('create', vaultChanged));
     this.registerEvent(this.app.vault.on('delete', vaultChanged));
     this.registerEvent(this.app.vault.on('rename', vaultChanged));
+    // 文件被"修改"也要刷新：近期文档按修改时间排序，编辑后顺序与相对时间都会变。
+    // Obsidian 的 modify 事件在打字时非常密集 → 1 秒去抖，且只在首页可见时重排那一小块。
+    this.registerEvent(this.app.vault.on('modify', () => this.onVaultModify()));
 
     this.addCommand({
       id: 'open-home',
@@ -379,6 +382,31 @@ function collectRecentFiles(paths, resolve, limit) {
   }
 
   /** 库内文件增删改名后，只重渲染"近期文档"那一块（不重建整个界面） */
+  /** modify 去抖刷新：只在"首页视图确实存在"时动手，避免后台空转 */
+  onVaultModify() {
+    if (this._recentTimer) window.clearTimeout(this._recentTimer);
+    this._recentTimer = window.setTimeout(() => {
+      this._recentTimer = null;
+      try {
+        const view = this.app.workspace.getActiveViewOfType(HomeView);
+        if (view && view.recentEl) {
+          view.renderRecent();
+          return;
+        }
+        // 首页在侧边/分屏可见但不活跃时，也刷一遍（有布局才算可见）
+        for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
+          const v = leaf.view;
+          if (!(v instanceof HomeView) || !v.recentEl) continue;
+          const rects = v.recentEl.getClientRects ? v.recentEl.getClientRects() : [];
+          if (rects.length === 0 && !v.recentEl.isConnected) continue;
+          v.renderRecent();
+        }
+      } catch (e) {
+        /* 视图已销毁等情况忽略即可 */
+      }
+    }, 1000);
+  }
+
   refreshRecentLists() {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
       const view = leaf.view;
