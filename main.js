@@ -273,14 +273,36 @@ function pageWidthCss(settings) {
   const s = settings || {};
   if (s.pageWidthTheme) return 'var(--file-line-width, 700px)';
   return `${clampNumber(s.pageWidthRem, 45, 95, 50)}rem`;
-}/**
- * 最近文档：先过滤掉已经不存在的文件 → 去重 → 按【修改时间倒序】→ 按条数截断。
- * 必须"先过滤后截断" —— Obsidian 的 getLastOpenFiles() 不会清理已删除的路径，
- * 若先截断，已删文件会把名额占满，列表看起来就少了。
- */
+}/** 允许出现在"近期文档"里的扩展名（附件、图片不算文档） */
+const RECENT_EXTS = ['md', 'canvas', 'base'];
+
 function mtimeOf(file) {
   const m = file && file.stat ? Number(file.stat.mtime) : NaN;
   return Number.isFinite(m) ? m : 0;
+}
+
+/**
+ * 近期文档 = 全库"笔记类"文件里修改时间最新的 N 个。
+ * 用全库而不是 Obsidian 的"最近打开"列表：那个队列只有十来条，
+ * 会出现"一个月前的文件还挂在表里，而刚改过的文件进不来"。
+ * file.stat 由 Obsidian 的 vault 索引维护（读内存，不逐个读盘）。
+ */
+function foldRecentFiles(files, limit) {
+  const max = Number.isFinite(limit) ? limit : 8;
+  if (!Array.isArray(files) || max <= 0) return [];
+  const out = [];
+  for (const f of files) {
+    if (!f || typeof f.path !== 'string') continue;
+    const ext = String(f.extension || f.path.split('.').pop() || '').toLowerCase();
+    if (RECENT_EXTS.indexOf(ext) < 0) continue;
+    out.push({ path: f.path, file: f });
+  }
+  out.sort((a, b) => {
+    const d = mtimeOf(b.file) - mtimeOf(a.file);
+    if (d !== 0) return d;
+    return String(a.path).localeCompare(String(b.path));
+  });
+  return out.slice(0, max);
 }
 
 function collectRecentFiles(paths, resolve, limit) {
@@ -369,15 +391,30 @@ function collectRecentFiles(paths, resolve, limit) {
     if (cmds && typeof cmds.listCommands === 'function') return cmds.listCommands();
     return cmds && cmds.commands ? Object.values(cmds.commands) : [];
   }
-  /** 最近文档条目：过滤掉已删除的文件，再按设置条数截断 */
-  recentEntries(paths) {
+  /** 最近文档条目：全库笔记类文件里按修改时间取最新的 N 个 */
+  recentEntries() {
+    const limit = clampNumber(this.settings.recentCount, 1, 20, 8);
+    let files = null;
+    try {
+      files = this.app.vault.getFiles();
+    } catch (e) {
+      files = null;
+    }
+    if (Array.isArray(files) && files.length) return foldRecentFiles(files, limit);
+    // 兜底：拿不到全库索引时，退回 Obsidian 的"最近打开"列表（老行为）
+    let paths = [];
+    try {
+      paths = this.app.workspace.getLastOpenFiles() || [];
+    } catch (e) {
+      paths = [];
+    }
     return collectRecentFiles(
       paths,
       (p) => {
         const f = this.app.vault.getAbstractFileByPath(p);
         return f instanceof TFile ? f : null;
       },
-      clampNumber(this.settings.recentCount, 1, 20, 8)
+      limit
     );
   }
 
@@ -704,9 +741,7 @@ class HomeView extends ItemView {
   }  renderRecent() {
     if (!this.recentEl) return; // 模块隐藏
     this.recentEl.empty();
-    const paths = this.app.workspace.getLastOpenFiles();
-
-    const entries = this.plugin.recentEntries(paths);
+    const entries = this.plugin.recentEntries();
     if (entries.length === 0) {
       this.recentEl.createDiv({ cls: 'simple-home-recent-empty' }).textContent = '还没有文档';
       return;
@@ -892,7 +927,7 @@ class HomeSettingTab extends PluginSettingTab {
     toggleRow('显示近期文档', 'showRecent');
     new Setting(containerEl)
       .setName('显示条数')
-      .setDesc('1–20 条；按修改时间从新到旧排列')
+      .setDesc('1–20 条；全库 md / canvas / base 里按修改时间从新到旧排列（不含附件图片）')
       .addSlider((sl) =>
         sl.setLimits(1, 20, 1).setValue(s.recentCount).setDynamicTooltip().onChange(bind('recentCount'))
       );

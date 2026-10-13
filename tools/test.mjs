@@ -268,7 +268,48 @@ eq(
   'resolve 抛错时跳过、不崩'
 );
 eq(T.collectRecentFiles(['a.md'], alive, NaN).length, 1, 'limit 非数字时用默认值');
-eq(T.collectRecentFiles(['a.md'], alive, 8)[0].file.path, 'a.md', '返回 {path, file} 结构');/* ---------- 10. 导出的类 ---------- */
+eq(T.collectRecentFiles(['a.md'], alive, 8)[0].file.path, 'a.md', '返回 {path, file} 结构');
+
+/* ---------- 9.9 近期文档：全库取最新的 N 个（2026-10-13 新增） ---------- */
+const mk = (path, mtime, ext) => ({ path: path, extension: ext || path.split('.').pop(), stat: { mtime: mtime } });
+const vaultFiles = [
+  mk('old.md', 1000),
+  mk('new.md', 5000),
+  mk('mid.md', 3000),
+  mk('pic.png', 9999),
+  mk('board.canvas', 4000),
+  mk('db.base', 2000),
+  mk('x', 8888, ''),
+];
+eq(
+  T.foldRecentFiles(vaultFiles, 3).map((e) => e.path),
+  ['new.md', 'board.canvas', 'mid.md'],
+  '全库取最新的 3 个（跨 md/canvas/base）'
+);
+eq(
+  T.foldRecentFiles(vaultFiles, 10).map((e) => e.path).indexOf('pic.png'),
+  -1,
+  '图片附件不进列表'
+);
+eq(
+  T.foldRecentFiles(vaultFiles, 10).map((e) => e.path).indexOf('x'),
+  -1,
+  '没有扩展名的文件不进列表'
+);
+eq(T.foldRecentFiles(vaultFiles, 1).map((e) => e.path), ['new.md'], '只取 1 条');
+eq(T.foldRecentFiles([], 5), [], '空库 → 空数组');
+eq(T.foldRecentFiles(null, 5), [], '非数组 → 空数组');
+eq(T.foldRecentFiles(vaultFiles, 0), [], 'limit 0 → 空数组');
+eq(
+  T.foldRecentFiles([mk('a.md', 7), mk('b.md', 7)], 5).map((e) => e.path),
+  ['a.md', 'b.md'],
+  'mtime 相同 → 按路径稳定排序'
+);
+eq(
+  T.foldRecentFiles([{ path: 'bad.md' }, null, { path: 42 }], 5).map((e) => e.path),
+  ['bad.md'],
+  '缺失 stat / 非法条目被跳过'
+);/* ---------- 10. 导出的类 ---------- */
 ok(typeof SimpleHomePlugin === 'function', '默认导出是插件类');
 eq(SimpleHomePlugin.VIEW_TYPE, 'simple-home-view', '导出 VIEW_TYPE');
 
