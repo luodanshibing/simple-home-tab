@@ -978,4 +978,5 @@ module.exports.__test = {
   enabledActions,
   pageWidthCss,
   collectRecentFiles,
+  foldRecentFiles,
 };
