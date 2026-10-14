@@ -927,7 +927,7 @@ class HomeSettingTab extends PluginSettingTab {
     toggleRow('显示近期文档', 'showRecent');
     new Setting(containerEl)
       .setName('显示条数')
-      .setDesc('1–20 条；全库 md / canvas / base 里按修改时间从新到旧排列（不含附件图片）')
+      .setDesc('1–20 条，按修改时间从新到旧')
       .addSlider((sl) =>
         sl.setLimits(1, 20, 1).setValue(s.recentCount).setDynamicTooltip().onChange(bind('recentCount'))
       );
