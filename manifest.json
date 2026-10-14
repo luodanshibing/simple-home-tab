@@ -1,7 +1,7 @@
 {
   "id": "simple-home-tab",
   "name": "Simple Home Tab",
-  "version": "1.6.2",
+  "version": "1.6.4",
   "minAppVersion": "1.5.0",
   "description": "极简新标签页，纯轻量实现，启动零扫描，不拖慢Obsidian。",
   "author": "luodanshibing",
